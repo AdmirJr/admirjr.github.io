@@ -1,0 +1,33 @@
+---
+title: "Admir C. de O. Junior"
+subtitle: "M.Sc. student in Neotropical Biodiversity (Ecology)"
+image: images/profile1.png
+about:
+  template: jolla
+  image-width: 20em
+  image-shape: round
+  links:
+    - icon: github
+      text: GitHub
+      href: https://github.com/AdmirJr
+    - icon: linkedin
+      text: LinkedIn
+      href: https://www.linkedin.com/in/admirjr/
+    - icon: "{{< iconify simple-icon orcid >}}"
+      text: ORCID
+      href: https://orcid.org/0000-0002-1946-0475
+    - icon: lattes
+      text: Lattes
+      href: http://lattes.cnpq.br/8356147861311035
+    - icon: envelope
+      text: E-mail
+      href: mailto:admircjunior@gmail.com
+---
+
+Hello, nice to meet you!
+
+I'm a biologist and mathematician currently enrolled in the M.Sc. program in Neotropical Biodiversity (Ecology) at the Federal University of Latin-american Integration in Brazil. I'm mostly interested in all aspects of ecological modeling—from theory to practice and its implications.
+
+This website serves as my portfolio. Here, you will find information about me, my work, and side projects and tutorials I create during my free time.
+
+Feel free to reach out!

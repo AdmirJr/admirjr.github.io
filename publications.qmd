@@ -1,0 +1,17 @@
+---
+title: "Publications"
+---
+
+## [Becoming e(E)arth (2023)](https://doi.org/10.46667/renbio.v16i1.1008)
+:::::: columns
+::: {.column width="40%"}
+This is an essay written back on college. It was my final work to graduate in Biological Sciences. Here I argument in favor of the inclusion of poetry as a way to teach and learn science.
+:::
+
+::: {.column width="5%"}
+:::
+
+::: {.column width="55%"}
+![](images/publications/tornarse_terra.png){fig-align="center"}
+:::
+::::::

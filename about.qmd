@@ -1,0 +1,26 @@
+---
+title: "About me"
+image: images/profile6.jpg
+about:
+  template: broadside
+  image-width: 20em
+  image-alt: "Me and my nearly-namesake Julius Caesar"
+  image-title: "Me and my nearly-namesake Julius Caesar"
+  links:
+    - icon: github
+      text: GitHub
+    - icon: linkedin
+      text: LinkedIn
+    - icon: orcid
+      text: OrcID
+    - icon: lattes
+      text: Lattes
+---
+
+Hi! My name is Admir Cesar de Oliveira Junior. I’m a mix of a biologist and a mathematician, but above all, I’m an absolute nerd. I love learning, developing, researching, and teaching.
+
+My academic work focuses on theoretical and computational ecology, especially using machine learning. I also have experience as a math and biology teacher and as a data analyst/scientist. This has helped me develop expertise in programming and data analysis. Essentially, I’m able to transform large, messy datasets into valuable insights using statistical and machine learning models—and a bit of magic. I can also create beautiful visualizations to express data. I’m proficient in R, Python, and C++, and I’m currently learning Julia. Additionally, I have advanced knowledge of Excel and intermediate skills in Power BI.
+
+Throughout my experiences, I’ve developed a wide range of hard and soft skills. One of the most important, to me, is the ability to communicate data and findings effectively to people of all ages and backgrounds. I’ve also worked on several projects involving machine learning, AI, and statistical data analysis, where I’ve learned how to collaborate with background diverse teams and find ways to make it work.
+
+In addition to all of this, I’m a big fan of history, geography, and literature. I can play many instruments (Brazilian viola is my favorite) and could talk about the Roman Empire for hours. I’m also a huge fan of *Dune*, *The Lord of the Rings*, and romantic poetry. On the left is a photo of me, happy to be meeting my nearly-namesake, Julius Caesar, in Uruguay.
