@@ -1,6 +1,8 @@
 [
   {
     "listing": "/projects.html",
-    "items": []
+    "items": [
+      "/projects/dice_simulations/index.html"
+    ]
   }
 ]
