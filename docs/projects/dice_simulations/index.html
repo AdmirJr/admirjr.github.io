@@ -203,7 +203,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>In a lecture about probabilities, after many examples using dices and colored balls, one of my students challenged me to throw three dices. If the sum of the faces summed more than 12, I would have to dismiss the class or let them play cards instead of studying.</p>
 <p>I got intrigued about the odds of this bet. What is the probabilities of them winning this? Well, with some calculation I was able to found that the probabilities of them winning were about 25.9%, what seemed pretty high for me, given that the max sum of the three dices is 18. So, to confront my theoretical approach, I decided to construct a computational simulation of this.</p>
 <p>Basically, we just need to create something that simulates dice throws, what is pretty easy:</p>
-<div id="647ba7d6" class="cell" data-execution_count="1">
+<div id="76354954" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>n_dices <span class="op">=</span> <span class="dv">3</span> <span class="co"># number of dices</span></span>
@@ -213,13 +213,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Rolled: </span><span class="sc">{</span>dice_throws<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Sum: </span><span class="sc">{</span><span class="bu">sum</span>(dice_throws)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Rolled: [1, 6, 5]
-Sum: 12</code></pre>
+<pre><code>Rolled: [4, 2, 3]
+Sum: 9</code></pre>
 </div>
 </div>
 <p>Nice.</p>
 <p>However, 1 repetition does not make statistics, so we need to throw it many times if we want to test something. So, we will throw three dices five times, storing its sum in a list, just to test the ideia:</p>
-<div id="2d693300" class="cell" data-execution_count="2">
+<div id="9f41dd69" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>n_dices <span class="op">=</span> <span class="dv">3</span> <span class="co"># number of dices</span></span>
@@ -235,11 +235,11 @@ Sum: 12</code></pre>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(experiment)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[12, 12, 6, 8, 6]</code></pre>
+<pre><code>[10, 14, 12, 13, 12]</code></pre>
 </div>
 </div>
 <p>This is the result of our experiment (for now). But to make it serious, we need to increase the number of repetitions. Let us make it 1000. Also, we are only interested in throws that summed &gt; 12, so lets only count those. Also, I will set a seed for the randomness generator, just for it to be reproducible:</p>
-<div id="601f3991" class="cell" data-execution_count="3">
+<div id="c3d9e1a3" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>random.seed(<span class="dv">13</span>) <span class="co"># set seed</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -262,7 +262,7 @@ Sum: 12</code></pre>
 </div>
 <p>Wow, 251 of 1000 throws. It’s 25,1% of chance! Pretty close to the theoretical 25,9%… but not enough. Let us expand that. We will now include replicates, something very important in experiment designs. So, we will run the experiment 10 times, and compute the probabilities for each. We will consider our final result as the arithmetic mean of those.</p>
 <p>You know what? Let’s make 100,000 repetitions… and remove the seed, to ensure it is random!</p>
-<div id="58b3d93c" class="cell" data-execution_count="4">
+<div id="430ffafc" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statistics <span class="im">as</span> st</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>random.seed(<span class="dv">13</span>) <span class="co"># set seed</span></span>

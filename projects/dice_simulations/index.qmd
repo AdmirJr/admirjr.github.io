@@ -3,6 +3,7 @@ title: "Simulating dice throws to understand how probabilities work"
 date: 12-11-2024 
 author: Admir Junior 
 categories: [simulation, statistics, python]
+image: "dice.jpg"
 ---
 
 In a lecture about probabilities, after many examples using dices and colored balls, one of my students challenged me to throw three dices. If the sum of the faces summed more than 12, I would have to dismiss the class or let them play cards instead of studying. 
