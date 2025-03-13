@@ -26,8 +26,10 @@ about:
 
 Hello, nice to meet you!
 
-I'm a biologist and mathematician currently enrolled in the M.Sc. program in Neotropical Biodiversity (Ecology) at the Federal University of Latin-american Integration in Brazil. I'm mostly interested in all aspects of ecological modeling—from theory to practice and its implications.
+I'm a biologist and mathematician with skills in statistics, data science and programming.
 
-This website serves as my portfolio. Here, you will find information about me, my work, and side projects and tutorials I create during my free time.
+Academically, I'm mostly interested in all aspects of ecological modeling—from theory to practice, and its implications.
+
+This website serves as my portfolio. Here, you will find information about me, my work, and side projects.
 
 Feel free to reach out!
