@@ -6,9 +6,15 @@ categories: [simulation, statistics, python]
 image: "dice.jpg"
 ---
 
-In a lecture about probabilities, after many examples using dices and colored balls, one of my students challenged me to throw three dices. If the sum of the faces summed more than 12, I would have to dismiss the class or let them play cards instead of studying. 
+```{r, include=FALSE}
+library(reticulate)
+use_virtualenv(".venv", required = TRUE)
+```
 
-I got intrigued about the odds of this bet. What is the probabilities of them winning this? Well, with some calculation I was able to found that the probabilities of them winning were about 25.9%, what seemed pretty high for me, given that the max sum of the three dices is 18. So, to confront my theoretical approach, I decided to construct a computational simulation of this. 
+
+In a lecture about probabilities, after many examples using dices and colored balls, one of my students challenged me to throw three dices. If the sum of the faces summed more than 12, I would have to dismiss the class or let them play cards instead of studying.
+
+I got intrigued about the odds of this bet. What is the probabilities of them winning this? Well, with some calculation I was able to found that the probabilities of them winning were about 25.9%, what seemed pretty high for me, given that the max sum of the three dices is 18. So, to confront my theoretical approach, I decided to construct a computational simulation of this.
 
 Basically, we just need to create something that simulates dice throws, what is pretty easy:
 
@@ -45,7 +51,7 @@ print(experiment)
 
 ```
 
-This is the result of our experiment (for now). But to make it serious, we need to increase the number of repetitions. Let us make it 1000. Also, we are only interested in throws that summed > 12, so lets only count those. Also, I will set a seed for the randomness generator, just for it to be reproducible:
+This is the result of our experiment (for now). But to make it serious, we need to increase the number of repetitions. Let us make it 1000. Also, we are only interested in throws that summed \> 12, so lets only count those. Also, I will set a seed for the randomness generator, just for it to be reproducible:
 
 ```{python}
 import random
@@ -100,6 +106,6 @@ print(st.mean(experiment))
 
 ```
 
-When I first ran this code, I got 25.9412%. Pretty close, huh?
+Wow, 25.9412%. Pretty close, huh?
 
 Probabilities are amazing.

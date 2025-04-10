@@ -1,8 +1,31 @@
 /*-- scss:defaults --*/
-// Base document colors
-$body-bg: #181818;
-$body-color: white;
-$link-color: #75AADB;
 
-// Code blocks
-$code-block-bg-alpha: -.8;
+// Cores principais
+$body-bg: #1e1e1e;
+$body-color: #cccccc;
+$link-color: #9bbcff;
+
+// Blocos de código
+$code-block-bg: #2d2d2d;              // Fundo escuro
+$code-block-border-color: #444444;
+$code-color: #cccccc;                 // Texto claro
+
+// Corrige outputs (como print() e mensagens)
+.quarto-output pre {
+  background-color: #2d2d2d !important;
+  color: #cccccc !important;
+  border-radius: 6px;
+  padding: 1em;
+  border: 1px solid #444;
+  font-family: "Fira Code", "Courier New", monospace;
+}
+
+// Corrige a cor do texto do output no darkmode
+.cell-output,
+.cell-output pre,
+.cell-output div,
+.cell-output code {
+  color: #e0e0e0 !important; // cor cinza clara (pode ajustar)
+  background-color: #1e1e1e !important; // opcional: ajusta o fundo também
+}
+

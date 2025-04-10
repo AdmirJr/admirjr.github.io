@@ -1,0 +1,172 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"Simulating dice throws to understand how probabilities work\"\n",
+        "date: 12-11-2024 \n",
+        "author: Admir Junior \n",
+        "categories: [simulation, statistics, python]\n",
+        "image: \"dice.jpg\"\n",
+        "---\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "In a lecture about probabilities, after many examples using dices and colored balls, one of my students challenged me to throw three dices. If the sum of the faces summed more than 12, I would have to dismiss the class or let them play cards instead of studying. \n",
+        "\n",
+        "I got intrigued about the odds of this bet. What is the probabilities of them winning this? Well, with some calculation I was able to found that the probabilities of them winning were about 25.9%, what seemed pretty high for me, given that the max sum of the three dices is 18. So, to confront my theoretical approach, I decided to construct a computational simulation of this. \n",
+        "\n",
+        "Basically, we just need to create something that simulates dice throws, what is pretty easy:\n"
+      ],
+      "id": "94b7f95a"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import random\n",
+        "\n",
+        "n_dices = 3 # number of dices\n",
+        "\n",
+        "# Here we roll the dices\n",
+        "dice_throws = [random.randint(1, 6) for _ in range(n_dices)]\n",
+        "print(f\"Rolled: {dice_throws}\")\n",
+        "print(f\"Sum: {sum(dice_throws)}\")"
+      ],
+      "id": "dde94a98",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Nice.\n",
+        "\n",
+        "However, 1 repetition does not make statistics, so we need to throw it many times if we want to test something. So, we will throw three dices five times, storing its sum in a list, just to test the ideia:\n"
+      ],
+      "id": "b5a42329"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import random\n",
+        "\n",
+        "n_dices = 3 # number of dices\n",
+        "repetitions = 5 # number of repetitions\n",
+        "\n",
+        "# Here we roll the dices\n",
+        "experiment = []\n",
+        "for i in range(0, repetitions):\n",
+        "  \n",
+        "  dice_throws = [random.randint(1, 6) for _ in range(n_dices)]\n",
+        "  dice_sum = sum(dice_throws)\n",
+        "  experiment.append(dice_sum)\n",
+        "  \n",
+        "print(experiment)"
+      ],
+      "id": "908975aa",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "This is the result of our experiment (for now). But to make it serious, we need to increase the number of repetitions. Let us make it 1000. Also, we are only interested in throws that summed > 12, so lets only count those. Also, I will set a seed for the randomness generator, just for it to be reproducible:\n"
+      ],
+      "id": "1b49e4c9"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import random\n",
+        "random.seed(13) # set seed\n",
+        "\n",
+        "n_dices = 3 # number of dices\n",
+        "repetitions = 1000 # number of repetitions\n",
+        "\n",
+        "# Here we roll the dices\n",
+        "experiment = []\n",
+        "for i in range(0, repetitions):\n",
+        "  \n",
+        "  dice_throws = [random.randint(1, 6) for _ in range(n_dices)]\n",
+        "  dice_sum = sum(dice_throws)\n",
+        "  experiment.append(dice_sum)\n",
+        "  \n",
+        "greater_than_12 = sum([n > 12 for n in experiment])\n",
+        "print(greater_than_12)"
+      ],
+      "id": "9465fd4a",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Wow, 251 of 1000 throws. It's 25,1% of chance! Pretty close to the theoretical 25,9%... but not enough. Let us expand that. We will now include replicates, something very important in experiment designs. So, we will run the experiment 10 times, and compute the probabilities for each. We will consider our final result as the arithmetic mean of those.\n",
+        "\n",
+        "You know what? Let's make 100,000 repetitions... and remove the seed, to ensure it is random!\n"
+      ],
+      "id": "50daec40"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import random\n",
+        "import statistics as st\n",
+        "random.seed(13) # set seed\n",
+        "\n",
+        "n_dices = 3 # number of dices\n",
+        "repetitions = 100000 # number of repetitions\n",
+        "replicates = 5\n",
+        "\n",
+        "# Here we roll the dices\n",
+        "experiment = []\n",
+        "for j in range(0, replicates):\n",
+        "  rolls = [] \n",
+        "  for i in range(0, repetitions):\n",
+        "  \n",
+        "    dice_throws = [random.randint(1, 6) for _ in range(n_dices)]\n",
+        "    dice_sum = sum(dice_throws)\n",
+        "    rolls.append(dice_sum)\n",
+        "  \n",
+        "  greater_than_12 = sum([n > 12 for n in rolls])\n",
+        "  prob = greater_than_12/repetitions\n",
+        "    \n",
+        "  experiment.append(prob)\n",
+        "\n",
+        "print(st.mean(experiment))\n"
+      ],
+      "id": "405677dc",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "When I first ran this code, I got 25.9412%. Pretty close, huh?\n",
+        "\n",
+        "Probabilities are amazing."
+      ],
+      "id": "c72133a5"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
