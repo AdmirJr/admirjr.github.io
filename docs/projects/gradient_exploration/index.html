@@ -9,7 +9,7 @@
 <meta name="author" content="Admir Junior">
 <meta name="dcterms.date" content="2025-11-04">
 
-<title>Using gradient to fit data – Admir Junior</title>
+<title>Fitting a Linear Model with Gradient Descent (from Scratch in R) – Admir Junior</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -205,7 +205,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Using gradient to fit data</h1>
+<h1 class="title">Fitting a Linear Model with Gradient Descent (from Scratch in R)</h1>
   <div class="quarto-categories">
     <div class="quarto-category">math</div>
     <div class="quarto-category">statistics</div>
@@ -241,7 +241,7 @@ window.Quarto = {
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>One of the principal concepts in machine learning is the gradient. It is used in many important algorithms, like Gradient Boosting Machines and Neural Networks. However, people that uses those algorithms often does not understand how it works. Here, I will try to introduce this amazing process with a very simple example. First, let’s simulate some data. I will generate a variable called “x” that is just 50 random numbers between 0 and 100:</p>
+<p>One of the principal concepts in machine learning is the gradient descent. It is used in many important algorithms, like Gradient Boosting Machines and Neural Networks. However, people who use those algorithms often do not understand how it works. Here, I will try to introduce this amazing process with a very simple example. First, let’s simulate some data. I will generate a variable <span class="math inline">\(x\)</span> that is just 50 random numbers between 0 and 100:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">13</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>, <span class="at">size =</span> <span class="dv">50</span>))</span>
@@ -251,7 +251,7 @@ window.Quarto = {
 [26] 62 63 64 65 66 68 69 70 73 74 75 77 78 81 82 83 84 85 88 89 90 96 97 98 99</code></pre>
 </div>
 </div>
-<p>Now I will create a variable “y” that will follow a linear relationship with “x” determined by <span class="math inline">\(y = 2x +3\)</span>; but I will also introduce some random noise, that will prevent the data to be fitted exactly by the equation above; in other words, I will introduce what is called <em>residuals</em> (<span class="math inline">\(\varepsilon\)</span>), to add some spice. So the equation that I will use to create “y” is <span class="math inline">\(y=2x+3+\epsilon\)</span> (I will be back on this soon):</p>
+<p>Now I will create a variable <span class="math inline">\(y\)</span> that will follow a linear relationship with <span class="math inline">\(x\)</span> determined by <span class="math inline">\(y = 2x +3\)</span>; but I will also introduce some random noise, that will prevent the data to be fitted exactly by the equation above; in other words, I will introduce what is called <em>residuals</em> (<span class="math inline">\(\varepsilon\)</span>), to add some spice. So the equation that I will use to create <span class="math inline">\(y\)</span> is <span class="math inline">\(y=2x+3+\epsilon\)</span> (I will be back on this soon):</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">13</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>residuals_noise <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="sc">-</span><span class="dv">15</span><span class="sc">:</span><span class="dv">15</span>,<span class="dv">50</span>,<span class="at">replace =</span> T)</span>
@@ -274,16 +274,20 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p>Awesome. Pretty linear to make it simple, the way teachers like. Now, remember that I said that the equation for this is <span class="math inline">\(y = 2x +3 + \varepsilon\)</span>? Well, I guess that if you is already familiar with linear models you recognized this equation. This because a linear model is defined as <span class="math inline">\(y = \beta_0x + \beta_1 + \varepsilon\)</span>. In this, <span class="math inline">\(\varepsilon\)</span> still means the random error of the model, and <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are the parameters. In this article, we will try to find a good-fitting model for this data using the gradient and backpropagation.</p>
+<p>Awesome. Pretty linear to make it simple, the way teachers like. Now, remember that I said that the equation for this is <span class="math inline">\(y = 2x +3 + \varepsilon\)</span>? Well, I guess that if you is already familiar with linear models you recognized this equation. This because the observed data in a linear model is defined as <span class="math inline">\(y = \beta_0 + \beta_1x + \varepsilon\)</span>. In this, <span class="math inline">\(\varepsilon\)</span> still means the random error of the model, and <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are the parameters. In this article, we will try to find a good-fitting model for this data using the gradient and backpropagation.</p>
 </section>
 <section id="weights-and-bias" class="level2">
 <h2 class="anchored" data-anchor-id="weights-and-bias">Weights and bias</h2>
-<p>Now things start getting fun. See, if we fit a linear model to this data, it will look like this <span class="math display">\[
-  \hat{y} = \beta_0x + \beta_1
+<p>Now things start getting fun. See, in classical statistics, if we define a linear model for this data, it will look like this <span class="math display">\[
+  \hat{y} = \beta_0 + \beta_1x
   \]</span></p>
-<p>where <span class="math inline">\(\hat{y}\)</span> is the predicted <span class="math inline">\(y\)</span> value. The random error <span class="math inline">\(\varepsilon\)</span> is not possible to introduce in the linear model. <span class="math inline">\(\beta_0\)</span> is called “weight”, because it multiplies the <span class="math inline">\(x\)</span> variable. <span class="math inline">\(\beta_1\)</span> is called “bias”, because it adds a constant value to the predictions. Just for the record, <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are also known as <em>angular</em> and <em>linear</em> coefficients or <em>slope</em> and <em>intercept</em>, respectively, depending on the context. Well, the best model we could fit for this data clearly is the equation I used to define <span class="math inline">\(y\)</span>, without the random error: <span class="math inline">\(y = 2x + 3\)</span>; with <span class="math inline">\(\beta_0 = 2\)</span> and <span class="math inline">\(\beta_1 = 3\)</span>. Let’s assume this model, generate some predictions and plot it in a line:</p>
+<p>where <span class="math inline">\(\hat{y}\)</span> is the predicted <span class="math inline">\(y\)</span> value. <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are also known as <em>linear</em> and <em>angular</em> coefficients or <em>intercept</em> and <em>slope</em>, respectively, depending on the context. The random error <span class="math inline">\(\varepsilon\)</span> is not possible to introduce directly the linear model - it is due to real-world variance. In machine learning, <span class="math inline">\(\beta_1\)</span> is often called “weight” (<span class="math inline">\(w\)</span>), because it multiplies the <span class="math inline">\(x\)</span> variable, and <span class="math inline">\(\beta_0\)</span> is called “bias” <span class="math inline">\(b\)</span>, because it adds a constant value to the predictions. So, we could rewrite the equation as</p>
+<p><span class="math display">\[
+\hat{y}=wx + b
+\]</span></p>
+<p>Well, the most obvious model we could fit for this data clearly is the equation I used to define <span class="math inline">\(y\)</span>, without the random error, i.e., <span class="math inline">\(\hat{y} = 2x + 3\)</span>; with <span class="math inline">\(\beta_0 = b = 3\)</span> and <span class="math inline">\(\beta_1= w = 2\)</span>. Let’s assume this model, generate some predictions and plot it in a line:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>y_hat <span class="ot">&lt;-</span> (<span class="dv">2</span> <span class="sc">*</span> x)<span class="sc">+</span><span class="dv">3</span> <span class="co"># making predictions of the model for x in [0,100]</span></span>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>y_hat <span class="ot">&lt;-</span> (<span class="dv">2</span> <span class="sc">*</span> x)<span class="sc">+</span><span class="dv">3</span> <span class="co"># making predictions of the ideal model</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x)</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(y_hat <span class="sc">~</span> x, <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">cex =</span> <span class="fl">0.5</span>) <span class="co"># adding predictions for x</span></span>
@@ -296,11 +300,11 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p>See? The red line is our linear model. The red dots are the predicted <span class="math inline">\(y\)</span> values (<span class="math inline">\(\hat{y}\)</span>). To evaluate this, we need a metric. I choose the Mean Squared Error (MSE, but here we will refer it as <span class="math inline">\(L\)</span>, for <em>loss</em>, also). The MSE is defined as</p>
+<p>See? The red line is our linear model. The red dots are the predicted <span class="math inline">\(y\)</span> values (<span class="math inline">\(\hat{y}\)</span>). To evaluate this, we need a metric. I’ll use the Mean Squared Error (MSE, but here we will refer it as <span class="math inline">\(L\)</span>, for <em>loss</em>, also). The MSE is defined as</p>
 <p><span class="math display">\[
 L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
 \]</span></p>
-<p>where <span class="math inline">\(n\)</span> is the number of samples. This can be implemented in R as a function, our <em>loss function</em>, what will be useful later on:</p>
+<p>where <span class="math inline">\(n\)</span> is the number of samples. This can be implemented in R as a function, our <em>loss function</em> <span class="math inline">\(L\)</span>, what will be useful later on:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>MSE <span class="ot">&lt;-</span> <span class="cf">function</span>(y,y_hat) {</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  squared_error <span class="ot">&lt;-</span> (y <span class="sc">-</span> y_hat)<span class="sc">**</span><span class="dv">2</span></span>
@@ -312,15 +316,12 @@ L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
 <pre><code>[1] 88.3</code></pre>
 </div>
 </div>
-<p>Nice. Now we know that, for a linear model with <span class="math inline">\(\beta_0 = 2; \beta_1 = 3\)</span>, <span class="math inline">\(MSE \approx 88.3\)</span> its not bad.</p>
+<p>Nice. Now we know that, for a linear model with <span class="math inline">\(w = 2; b = 3\)</span>, the loss is <span class="math inline">\(MSE = 88.3\)</span>. Remember that.</p>
 </section>
 <section id="yes-but-what-about-the-gradient" class="level2">
 <h2 class="anchored" data-anchor-id="yes-but-what-about-the-gradient">Yes… but what about the gradient?</h2>
-<p>In the previous sections we were constructing our foundations to now finally construct the gradient. First, let’s rewrite <span class="math inline">\(\beta_1\)</span> to <span class="math inline">\(w\)</span>, as it stands for <em>weight</em>, and <span class="math inline">\(\beta_1\)</span> for <span class="math inline">\(b\)</span>, as it will stand for <em>bias</em>, and then define the predction of our model as</p>
-<p><span class="math display">\[
-\hat{y} = w \cdot x + b
-\]</span></p>
-<p>So, basically, the game here is to define random initialization values for <span class="math inline">\(w\)</span> and <span class="math inline">\(b\)</span>, make predictions, calculate the loss (<span class="math inline">\(L\)</span>), compute the <em>gradient</em>, update the parameters, and so on, until we find the best model. Each iteration of the process is called an <em>epoch</em>. The gradient here is just the information on how much and in which direction should the value of a parameter be updated. E.g., if in the gradient computation step we find that the gradient equals <span class="math inline">\(-0.35\)</span>, this means that increasing the parameter slightly would increase the loss, so we should move it in the opposite direction — that is, we should increase the parameter by <span class="math inline">\(0.35 \cdot \text{learning rate}\)</span>. The <span class="math inline">\(\text{learning rate}\)</span>, hereafter <span class="math inline">\(lr\)</span>, is the proportion of the gradient used, i.e., how fast the parameters will be changed between one epoch and the other. As you can guess, we need to compute one gradient for each parameter to be adjusted, but let’s start simple, adjusting just the weight <span class="math inline">\(w\)</span>. In this case, the gradient is defined as <span class="math inline">\(\frac{dL}{dw}\)</span>, i.e, the derivative of the <em>loss</em> <span class="math inline">\(L\)</span>, in our case the MSE, with respect to the weight <span class="math inline">\(w\)</span>. In short, how much the weight influences in the loss. If the reader is not familiarized with derivatives at all, I do recommend searching about it; in any case, just go with the flux and everything will be okay. You should have noticed by now, however, that <span class="math inline">\(w\)</span> its not really a term of <span class="math inline">\(L\)</span>. However, <span class="math inline">\(w\)</span> is a term of <span class="math inline">\(\hat{y}\)</span>, and <span class="math inline">\(\hat{y}\)</span> is a term of <span class="math inline">\(L\)</span>. So, by the laws of calculus (in special the chain rule), we can say that</p>
+<p>In the previous sections we were constructing our foundations to now finally construct the gradient descent. Basically, the task here is to define random initialization values for <span class="math inline">\(w\)</span> and <span class="math inline">\(b\)</span>, make predictions, calculate the loss (<span class="math inline">\(L\)</span>), compute the <em>gradient</em>, update the parameters, and so on, until we find the best model. Each iteration of the process is called an <em>epoch</em>. The gradient here is just the information on how much and in which direction should the value of a parameter be updated, e.g., if in the gradient computation step we find that the gradient equals <span class="math inline">\(-0.35\)</span>, this means that increasing the parameter slightly would increase the loss, so we should move it in the opposite direction — that is, we should increase the parameter by <span class="math inline">\(0.35 \cdot \text{lr}\)</span>. The <span class="math inline">\(\text{lr}\)</span> stands for <em>learning rate</em> and is the proportion of the gradient used, i.e., it controls how much the parameters will change between one epoch and the other.</p>
+<p>As you can guess, we need to compute one gradient for each parameter to be adjusted, but let’s start simple, adjusting just the weight <span class="math inline">\(w\)</span>. In this case, the gradient is defined as <span class="math inline">\(\frac{dL}{dw}\)</span>, i.e, the derivative of the <em>loss</em> <span class="math inline">\(L\)</span>, in our case the MSE, with respect to the weight <span class="math inline">\(w\)</span>. In short, how much the weight influences in the loss. If the reader is not familiarized with derivatives at all, I do recommend searching about it; in any case, just go with the flux and everything will be okay. You should have noticed by now, however, that <span class="math inline">\(w\)</span> its not really a term of <span class="math inline">\(L\)</span>. Instead, <span class="math inline">\(w\)</span> is a term of <span class="math inline">\(\hat{y}\)</span>, and <span class="math inline">\(\hat{y}\)</span> is a term of <span class="math inline">\(L\)</span>. So, by the laws of calculus (in special the chain rule), we can say that</p>
 <p><span class="math display">\[
 \frac{dL}{dw} = \frac{dL}{d\hat{y}} \cdot \frac{d\hat{y}}{dw}
 \]</span></p>
@@ -333,9 +334,9 @@ L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">13</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>lr <span class="ot">&lt;-</span> <span class="fl">0.00001</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">1</span>)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>w</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"Our initial w:"</span>,w))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.7103224</code></pre>
+<pre><code>[1] "Our initial w: 0.710322446655482"</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -358,10 +359,10 @@ L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
 </div>
 <p>Horrendous. So wee need to compute the gradient:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dl_dyhat <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">2</span> <span class="sc">*</span> (y <span class="sc">-</span> y_hat)    </span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>dyhat_dw <span class="ot">&lt;-</span> x                    </span>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dl_dyhat <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">2</span> <span class="sc">*</span> (y <span class="sc">-</span> y_hat) <span class="co"># derivative of L with respect to y_hat, for each point</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>dyhat_dw <span class="ot">&lt;-</span> x                <span class="co"># derivative of y_hat with respect to w, for each point</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>gradient <span class="ot">&lt;-</span> <span class="fu">mean</span>(dl_dyhat <span class="sc">*</span> dyhat_dw)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>gradient <span class="ot">&lt;-</span> <span class="fu">mean</span>(dl_dyhat <span class="sc">*</span> dyhat_dw) </span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>gradient</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] -10131.17</code></pre>
@@ -375,7 +376,8 @@ L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
 <pre><code>[1] 0.8116342</code></pre>
 </div>
 </div>
-<p>and update the model:</p>
+<p>This is the core of gradient descent: we move <span class="math inline">\(w\)</span> in the opposite direction of the gradient.</p>
+<p>Let’s update the model:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>y_hat <span class="ot">&lt;-</span> (w <span class="sc">*</span> x)<span class="sc">+</span><span class="dv">3</span> <span class="co"># our new model</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -409,8 +411,8 @@ L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
 <span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x)</span>
 <span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(y_hat <span class="sc">~</span> x, <span class="at">col =</span> <span class="st">"blue"</span>, <span class="at">cex =</span> <span class="fl">0.5</span>)</span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">3</span>, <span class="at">b =</span> w, <span class="at">col =</span> <span class="st">"blue"</span>)     <span class="co"># nova linha</span></span>
-<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">3</span>, <span class="at">b =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"red"</span>)      <span class="co"># modelo "ideal"</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">3</span>, <span class="at">b =</span> w, <span class="at">col =</span> <span class="st">"blue"</span>)     <span class="co"># Our model</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">3</span>, <span class="at">b =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"red"</span>)      <span class="co"># Ideal model</span></span>
 <span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="fu">text</span>(<span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="fu">max</span>(y), <span class="fu">paste</span>(<span class="st">"Loss:"</span>, <span class="fu">round</span>(loss, <span class="dv">3</span>)), <span class="at">pos =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
@@ -420,7 +422,8 @@ L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
 </div>
 </div>
 </div>
-<p>Very nice. Loss reduced even more. As I said, we can do this many times, i.e., many epochs, and search for the best model. Here we will set 100 epochs. But let’s go over the first 10 to see somethings:</p>
+<p>Nice! We can see that the loss keeps going down — our model is improving!</p>
+<p>As I said, we can do this many times, i.e., many epochs, and search for the best model. Here we will set 100 epochs, but let’s go over the first 10 to see some things:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>epochs <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -480,12 +483,13 @@ L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
 </div>
 </div>
 </div>
-<p>This type of plot is called “convergence plot”. It indicates that around epoch 40 the model <em>converged</em>, i.e., minimized the loss, and could not improve further. That is, we found the model we were seeking. Awesome, isn’t it? Well, let’s visualize this model:</p>
+<p>This type of plot is called “convergence plot”. It indicates that around epoch 40 the model <em>converged</em>, i.e., minimized the loss, and could not improve further. That is, we found the model we were seeking. Awesome, isn’t it? This is the essence of many machine learning algorithms: define a model, measure the error, and use gradients to make it better — one small step at a time.</p>
+<p>Well, let’s visualize this model:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x)</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(y_hat <span class="sc">~</span> x, <span class="at">col =</span> <span class="st">"blue"</span>, <span class="at">cex =</span> <span class="fl">0.5</span>)</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">3</span>, <span class="at">b =</span> w, <span class="at">col =</span> <span class="st">"blue"</span>)     <span class="co"># nova linha</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">3</span>, <span class="at">b =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"red"</span>)      <span class="co"># modelo "ideal"</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">3</span>, <span class="at">b =</span> w, <span class="at">col =</span> <span class="st">"blue"</span>)     <span class="co"># Our model</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">3</span>, <span class="at">b =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"red"</span>)      <span class="co"># Ideal model</span></span>
 <span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">text</span>(<span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="fu">max</span>(y), <span class="fu">paste</span>(<span class="st">"Loss:"</span>, <span class="fu">round</span>(loss, <span class="dv">3</span>)), <span class="at">pos =</span> <span class="dv">4</span>)</span>
 <span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="fu">text</span>(<span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="fu">max</span>(y)<span class="sc">-</span><span class="dv">15</span>, <span class="fu">paste</span>(<span class="st">"w:"</span>, <span class="fu">round</span>(w, <span class="dv">3</span>)), <span class="at">pos =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
@@ -496,15 +500,15 @@ L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
 </div>
 </div>
 </div>
-<p>Very nice. We ended up with a model <span class="math inline">\(\hat{y}=2.028x +3\)</span>. Very close of our ideal <span class="math inline">\(\hat{y}=2x+3\)</span>.</p>
+<p>Very nice. We ended up with a model <span class="math inline">\(\hat{y}=2.028x +3\)</span>. Very close of our first guessed model <span class="math inline">\(\hat{y}=2x+3\)</span>; and look, the loss is lower!! It was 88.3, now it is 85.152. It means we constructed a model more accurate.</p>
 </section>
 <section id="getting-more-complex" class="level2">
 <h2 class="anchored" data-anchor-id="getting-more-complex">Getting more complex</h2>
-<p>Wow, we got so far, but let’s go even further. Now, we will also apply the gradient to find the bias <span class="math inline">\(b\)</span>. For this, we will introduce the gradient to adjust <span class="math inline">\(b\)</span>, i.e., the derivative of <span class="math inline">\(L\)</span> with respect to <span class="math inline">\(b\)</span>, or <span class="math inline">\(\frac{dL}{db}\)</span>, which can be resolved in the same way as the gradient of <span class="math inline">\(w\)</span>, with the chain rule. This time I skip the math, let’s go straight to the code:</p>
+<p>Wow, we got so far, but let’s go even further. Now, we will also apply the gradient to find the bias <span class="math inline">\(b\)</span>. For this, we will introduce the gradient to adjust <span class="math inline">\(b\)</span>, i.e., the derivative of <span class="math inline">\(L\)</span> with respect to <span class="math inline">\(b\)</span>, or <span class="math inline">\(\frac{dL}{db}\)</span>, which can be resolved in the same way as the gradient of <span class="math inline">\(w\)</span>, with the chain rule. This time I’ll skip the math, let’s go straight to the code:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">13</span>)</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Inicialização aleatória dos parâmetros</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameter initialization</span></span>
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">1</span>)</span>
 <span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">1</span>)</span>
 <span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>lr <span class="ot">&lt;-</span> <span class="fl">0.00001</span></span>
@@ -550,8 +554,8 @@ L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
 <div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(y <span class="sc">~</span> x)</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(y_hat <span class="sc">~</span> x, <span class="at">col =</span> <span class="st">"blue"</span>, <span class="at">cex =</span> <span class="fl">0.5</span>)</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> b, <span class="at">b =</span> w, <span class="at">col =</span> <span class="st">"blue"</span>)     <span class="co"># nova linha</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">3</span>, <span class="at">b =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"red"</span>)      <span class="co"># modelo "ideal"</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> b, <span class="at">b =</span> w, <span class="at">col =</span> <span class="st">"blue"</span>)     <span class="co"># Final model</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">3</span>, <span class="at">b =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"red"</span>)      <span class="co"># First model</span></span>
 <span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="fu">text</span>(<span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="fu">max</span>(y), <span class="fu">paste</span>(<span class="st">"Loss:"</span>, <span class="fu">round</span>(loss, <span class="dv">3</span>)), <span class="at">pos =</span> <span class="dv">4</span>)</span>
 <span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="fu">text</span>(<span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="fu">max</span>(y)<span class="sc">-</span><span class="dv">15</span>, <span class="fu">paste</span>(<span class="st">"w:"</span>, <span class="fu">round</span>(w, <span class="dv">3</span>)), <span class="at">pos =</span> <span class="dv">4</span>)</span>
 <span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="fu">text</span>(<span class="at">x =</span> <span class="dv">0</span>, <span class="at">y =</span> <span class="fu">max</span>(y)<span class="sc">-</span><span class="dv">30</span>, <span class="fu">paste</span>(<span class="st">"bias:"</span>, <span class="fu">round</span>(b, <span class="dv">3</span>)), <span class="at">pos =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -563,7 +567,7 @@ L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
 </div>
 </div>
 </div>
-<p>Now you may be thinking “okay, but 0.266 is nowhere near to 3… how it is a good bias estimation?”. And it is true. We could adopt other approaches to better estimate <span class="math inline">\(b\)</span>, but for now it can provide us a good model. So, let’s call it a day and move on. Thus, the equation of our final model is <span class="math inline">\(\hat{y_i}=wx_i+b=2.067x+0.266\)</span>. Pretty neat, huh?</p>
+<p>Thus, the equation of our final model is <span class="math inline">\(\hat{y_i}=wx_i+b=2.067x+0.266\)</span>. Note that the estimated <span class="math inline">\(b\)</span> was pretty distant from 3, our firstly estimated <span class="math inline">\(b\)</span>. However, we managed to reduced the loss even more, now it is 84.566. So, basically, we ended up constructing a better model than the first one!! Pretty neat, huh?</p>
 <p># The grand finale</p>
 <p>We are pretty much done here, but I want to construct an animation of the full process just for better visualization… and because it is truly beautiful:</p>
 <div class="cell">
@@ -571,32 +575,32 @@ L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gganimate)</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">13</span>)</span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Inicialização dos parâmetros</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Initializing parameters</span></span>
 <span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">1</span>)</span>
 <span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">1</span>)</span>
 <span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>lr <span class="ot">&lt;-</span> <span class="fl">0.00001</span></span>
 <span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Guardar histórico da animação</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Store history</span></span>
 <span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>history <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
 <span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Loop de treinamento</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Training loop</span></span>
 <span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>epochs <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">100</span></span>
 <span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (epoch <span class="cf">in</span> epochs) {</span>
 <span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>  y_hat <span class="ot">&lt;-</span> w <span class="sc">*</span> x <span class="sc">+</span> b</span>
 <span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Gradiente</span></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Gradient</span></span>
 <span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>  dl_dyhat <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">2</span> <span class="sc">*</span> (y <span class="sc">-</span> y_hat)</span>
 <span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>  gradient_w <span class="ot">&lt;-</span> <span class="fu">mean</span>(dl_dyhat <span class="sc">*</span> x)</span>
 <span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>  gradient_b <span class="ot">&lt;-</span> <span class="fu">mean</span>(dl_dyhat)</span>
 <span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Atualização dos parâmetros</span></span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Parameter update</span></span>
 <span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>  w <span class="ot">&lt;-</span> w <span class="sc">-</span> lr <span class="sc">*</span> gradient_w</span>
 <span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>  b <span class="ot">&lt;-</span> b <span class="sc">-</span> lr <span class="sc">*</span> gradient_b</span>
 <span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Loss</span></span>
 <span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>  loss <span class="ot">&lt;-</span> <span class="fu">mean</span>((y <span class="sc">-</span> y_hat)<span class="sc">^</span><span class="dv">2</span>)</span>
 <span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Registro do histórico (cada x, y, y_hat por epoch)</span></span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Register it all</span></span>
 <span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>  step_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
 <span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> x,</span>
 <span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> y,</span>
@@ -610,32 +614,31 @@ L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
 <span id="cb26-41"><a href="#cb26-41" aria-hidden="true" tabindex="-1"></a>  history <span class="ot">&lt;-</span> <span class="fu">rbind</span>(history, step_df)</span>
 <span id="cb26-42"><a href="#cb26-42" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb26-43"><a href="#cb26-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-44"><a href="#cb26-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Pegar valores máximos para posicionar os textos</span></span>
-<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a>max_y <span class="ot">&lt;-</span> <span class="fu">max</span>(y)</span>
-<span id="cb26-46"><a href="#cb26-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-47"><a href="#cb26-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Construção do gráfico animado</span></span>
-<span id="cb26-48"><a href="#cb26-48" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(history, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y)) <span class="sc">+</span></span>
-<span id="cb26-49"><a href="#cb26-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
-<span id="cb26-50"><a href="#cb26-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> y_hat), <span class="at">color =</span> <span class="st">"blue"</span>, <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb26-51"><a href="#cb26-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> (<span class="dv">2</span><span class="sc">*</span>x)<span class="sc">+</span><span class="dv">3</span>), <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb26-52"><a href="#cb26-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(</span>
-<span id="cb26-53"><a href="#cb26-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="dv">10</span>,</span>
-<span id="cb26-54"><a href="#cb26-54" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> max_y,</span>
-<span id="cb26-55"><a href="#cb26-55" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"w = "</span>, <span class="fu">round</span>(w, <span class="dv">4</span>),</span>
-<span id="cb26-56"><a href="#cb26-56" aria-hidden="true" tabindex="-1"></a>                   <span class="st">", b = "</span>, <span class="fu">round</span>(b, <span class="dv">4</span>),</span>
-<span id="cb26-57"><a href="#cb26-57" aria-hidden="true" tabindex="-1"></a>                   <span class="st">", loss = "</span>, <span class="fu">round</span>(loss, <span class="dv">1</span>))</span>
-<span id="cb26-58"><a href="#cb26-58" aria-hidden="true" tabindex="-1"></a>  ), <span class="at">hjust =</span> <span class="fl">0.35</span>, <span class="at">vjust =</span> <span class="dv">1</span>, <span class="at">size =</span> <span class="dv">5</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
-<span id="cb26-59"><a href="#cb26-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb26-60"><a href="#cb26-60" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">'Epoch: {closest_state}'</span>,</span>
-<span id="cb26-61"><a href="#cb26-61" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">'x'</span>, <span class="at">y =</span> <span class="st">'y'</span></span>
-<span id="cb26-62"><a href="#cb26-62" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb26-63"><a href="#cb26-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb26-64"><a href="#cb26-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transition_states</span>(epoch, <span class="at">transition_length =</span> <span class="dv">1</span>, <span class="at">state_length =</span> <span class="dv">1</span>, <span class="at">wrap =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb26-65"><a href="#cb26-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ease_aes</span>(<span class="st">'linear'</span>)</span>
-<span id="cb26-66"><a href="#cb26-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-67"><a href="#cb26-67" aria-hidden="true" tabindex="-1"></a><span class="co"># Renderizar</span></span>
-<span id="cb26-68"><a href="#cb26-68" aria-hidden="true" tabindex="-1"></a><span class="co"># anim &lt;- animate(p, fps = 10, nframes = length(epochs), width = 800, height = 400,</span></span>
-<span id="cb26-69"><a href="#cb26-69" aria-hidden="true" tabindex="-1"></a><span class="co">#                 renderer = gifski_renderer("regressao_animada.gif"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb26-44"><a href="#cb26-44" aria-hidden="true" tabindex="-1"></a>max_y <span class="ot">&lt;-</span> <span class="fu">max</span>(y)</span>
+<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-46"><a href="#cb26-46" aria-hidden="true" tabindex="-1"></a><span class="co"># Animated graph</span></span>
+<span id="cb26-47"><a href="#cb26-47" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(history, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y)) <span class="sc">+</span></span>
+<span id="cb26-48"><a href="#cb26-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb26-49"><a href="#cb26-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> y_hat), <span class="at">color =</span> <span class="st">"blue"</span>, <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb26-50"><a href="#cb26-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y =</span> (<span class="dv">2</span><span class="sc">*</span>x)<span class="sc">+</span><span class="dv">3</span>), <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb26-51"><a href="#cb26-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(</span>
+<span id="cb26-52"><a href="#cb26-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="dv">10</span>,</span>
+<span id="cb26-53"><a href="#cb26-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> max_y,</span>
+<span id="cb26-54"><a href="#cb26-54" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"w = "</span>, <span class="fu">round</span>(w, <span class="dv">4</span>),</span>
+<span id="cb26-55"><a href="#cb26-55" aria-hidden="true" tabindex="-1"></a>                   <span class="st">", b = "</span>, <span class="fu">round</span>(b, <span class="dv">4</span>),</span>
+<span id="cb26-56"><a href="#cb26-56" aria-hidden="true" tabindex="-1"></a>                   <span class="st">", loss = "</span>, <span class="fu">round</span>(loss, <span class="dv">1</span>))</span>
+<span id="cb26-57"><a href="#cb26-57" aria-hidden="true" tabindex="-1"></a>  ), <span class="at">hjust =</span> <span class="fl">0.35</span>, <span class="at">vjust =</span> <span class="dv">1</span>, <span class="at">size =</span> <span class="dv">5</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb26-58"><a href="#cb26-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb26-59"><a href="#cb26-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">'Epoch: {closest_state}'</span>,</span>
+<span id="cb26-60"><a href="#cb26-60" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">'x'</span>, <span class="at">y =</span> <span class="st">'y'</span></span>
+<span id="cb26-61"><a href="#cb26-61" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb26-62"><a href="#cb26-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb26-63"><a href="#cb26-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transition_states</span>(epoch, <span class="at">transition_length =</span> <span class="dv">1</span>, <span class="at">state_length =</span> <span class="dv">1</span>, <span class="at">wrap =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb26-64"><a href="#cb26-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ease_aes</span>(<span class="st">'linear'</span>)</span>
+<span id="cb26-65"><a href="#cb26-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-66"><a href="#cb26-66" aria-hidden="true" tabindex="-1"></a><span class="co"># Render</span></span>
+<span id="cb26-67"><a href="#cb26-67" aria-hidden="true" tabindex="-1"></a><span class="co"># anim &lt;- animate(p, fps = 10, nframes = length(epochs), width = 800, height = 400,</span></span>
+<span id="cb26-68"><a href="#cb26-68" aria-hidden="true" tabindex="-1"></a><span class="co">#                 renderer = gifski_renderer("animated_gradient.gif"))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><img src="regressao_animada.gif" class="img-fluid"></p>
 <p>That’s all!!</p>

@@ -15,7 +15,7 @@ x <- sort(sample(1:100, size = 50))
 x
 ```
 
-Now I will create a variable $y$ that will follow a linear relationship with "x" determined by $y = 2x +3$; but I will also introduce some random noise, that will prevent the data to be fitted exactly by the equation above; in other words, I will introduce what is called *residuals* ($\varepsilon$), to add some spice. So the equation that I will use to create $y$ is $y=2x+3+\epsilon$ (I will be back on this soon):
+Now I will create a variable $y$ that will follow a linear relationship with $x$ determined by $y = 2x +3$; but I will also introduce some random noise, that will prevent the data to be fitted exactly by the equation above; in other words, I will introduce what is called *residuals* ($\varepsilon$), to add some spice. So the equation that I will use to create $y$ is $y=2x+3+\epsilon$ (I will be back on this soon):
 
 ```{r}
 set.seed(13)
