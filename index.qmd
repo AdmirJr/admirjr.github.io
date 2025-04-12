@@ -1,6 +1,6 @@
 ---
 title: "Admir C. de O. Junior"
-subtitle: "M.Sc. student in Neotropical Biodiversity (Ecology)"
+subtitle: "M.Sc. in Biological Sciences (Ecology)"
 image: images/profile1.png
 about:
   template: jolla

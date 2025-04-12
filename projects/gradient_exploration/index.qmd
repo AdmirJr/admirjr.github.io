@@ -1,0 +1,370 @@
+---
+title: "Fitting a Linear Model with Gradient Descent (from Scratch in R)"
+date: 11-04-2025
+author: Admir Junior 
+categories: [math, statistics, R]
+---
+
+## Introduction
+
+One of the principal concepts in machine learning is the gradient descent. It is used in many important algorithms, like Gradient Boosting Machines and Neural Networks. However, people who use those algorithms often do not understand how it works. Here, I will try to introduce this amazing process with a very simple example. First, let's simulate some data. I will generate a variable $x$ that is just 50 random numbers between 0 and 100:
+
+```{r}
+set.seed(13)
+x <- sort(sample(1:100, size = 50))
+x
+```
+
+Now I will create a variable $y$ that will follow a linear relationship with "x" determined by $y = 2x +3$; but I will also introduce some random noise, that will prevent the data to be fitted exactly by the equation above; in other words, I will introduce what is called *residuals* ($\varepsilon$), to add some spice. So the equation that I will use to create $y$ is $y=2x+3+\epsilon$ (I will be back on this soon):
+
+```{r}
+set.seed(13)
+residuals_noise <- sample(-15:15,50,replace = T)
+y = (2*x) + 3 + residuals_noise
+y
+```
+
+Nice. Let's plot this:
+
+```{r}
+plot(y~x)
+```
+
+Awesome. Pretty linear to make it simple, the way teachers like. Now, remember that I said that the equation for this is $y = 2x +3 + \varepsilon$? Well, I guess that if you is already familiar with linear models you recognized this equation. This because the observed data in a linear model is defined as $y = \beta_0 + \beta_1x + \varepsilon$. In this, $\varepsilon$ still means the random error of the model, and $\beta_0$ and $\beta_1$ are the parameters. In this article, we will try to find a good-fitting model for this data using the gradient and backpropagation.
+
+## Weights and bias
+
+Now things start getting fun. See, in classical statistics, if we define a linear model for this data, it will look like this $$
+  \hat{y} = \beta_0 + \beta_1x
+  $$
+
+where $\hat{y}$ is the predicted $y$ value. $\beta_0$ and $\beta_1$ are also known as *linear* and *angular* coefficients or *intercept* and *slope*, respectively, depending on the context. The random error $\varepsilon$ is not possible to introduce directly the linear model - it is due to real-world variance. In machine learning, $\beta_1$ is often called "weight" ($w$), because it multiplies the $x$ variable, and $\beta_0$ is called "bias" $b$, because it adds a constant value to the predictions. So, we could rewrite the equation as
+
+$$
+\hat{y}=wx + b
+$$
+
+  Well, the most obvious model we could fit for this data clearly is the equation I used to define $y$, without the random error, i.e., $\hat{y} = 2x + 3$; with $\beta_0 = b = 3$ and $\beta_1= w = 2$. Let's assume this model, generate some predictions and plot it in a line:
+
+```{r}
+y_hat <- (2 * x)+3 # making predictions of the ideal model
+
+plot(y ~ x)
+points(y_hat ~ x, col = "red", cex = 0.5) # adding predictions for x
+abline(a=3,b=2, col = "red") # adding the prediction line of the model
+```
+
+See? The red line is our linear model. The red dots are the predicted $y$ values ($\hat{y}$). To evaluate this, we need a metric. I'll use the Mean Squared Error (MSE, but here we will refer it as $L$, for *loss*, also). The MSE is defined as
+
+$$
+L = MSE = {{1 \over n} \sum_{i=1}^n (y-\hat{y})^2}
+$$
+
+where $n$ is the number of samples. This can be implemented in R as a function, our *loss function* $L$, what will be useful later on:
+
+```{r}
+MSE <- function(y,y_hat) {
+  squared_error <- (y - y_hat)**2
+  return(mean(squared_error)) 
+}
+
+MSE(y, y_hat)
+```
+
+Nice. Now we know that, for a linear model with $w = 2; b = 3$, the loss is $MSE = 88.3$. Remember that.
+
+## Yes... but what about the gradient?
+
+In the previous sections we were constructing our foundations to now finally construct the gradient descent. Basically, the task here is to define random initialization values for $w$ and $b$, make predictions, calculate the loss ($L$), compute the *gradient*, update the parameters, and so on, until we find the best model. Each iteration of the process is called an *epoch*. The gradient here is just the information on how much and in which direction should the value of a parameter be updated, e.g., if in the gradient computation step we find that the gradient equals $-0.35$, this means that increasing the parameter slightly would increase the loss, so we should move it in the opposite direction — that is, we should increase the parameter by $0.35 \cdot \text{lr}$. The $\text{lr}$ stands for *learning rate* and is the proportion of the gradient used, i.e., it controls how much the parameters will change between one epoch and the other. 
+
+As you can guess, we need to compute one gradient for each parameter to be adjusted, but let's start simple, adjusting just the weight $w$. In this case, the gradient is defined as $\frac{dL}{dw}$, i.e, the derivative of the *loss* $L$, in our case the MSE, with respect to the weight $w$. In short, how much the weight influences in the loss. If the reader is not familiarized with derivatives at all, I do recommend searching about it; in any case, just go with the flux and everything will be okay. You should have noticed by now, however, that $w$ its not really a term of $L$. Instead, $w$ is a term of $\hat{y}$, and $\hat{y}$ is a term of $L$. So, by the laws of calculus (in special the chain rule), we can say that
+
+$$
+\frac{dL}{dw} = \frac{dL}{d\hat{y}} \cdot \frac{d\hat{y}}{dw}
+$$
+
+and I think that it is beautiful. Now, by the same set of rules, the derivative of the predicted $y$ with respect to the weight $w$ equals $x$, i.e., $\frac{d\hat{y}}{dw} =x$. And $\frac{dL}{d\hat{y}}=-\frac{2}{n}(y-\hat{y})$.
+
+## Finally, fitting the model
+
+Enough with derivatives, let's do some coding work. First, let's set a random value $w$, the $lr = 0.00001$, and get the first version of our model:
+
+```{r}
+set.seed(13)
+lr <- 0.00001
+w <- runif(1)
+print(paste("Our initial w:",w))
+```
+
+```{r}
+y_hat <- (w * x)+3 # our new model
+
+plot(y ~ x)
+points(y_hat ~ x, col = "blue", cex = 0.5) # adding predictions for x
+abline(a=3,b=w, col = "blue") # the model's predictions line
+abline(a=3,b=2, col = "red") # keep the old line as reference
+
+loss <- MSE(y,y_hat)
+text(x = 0, y=200,paste("Loss:",round(loss,3)), pos=4)
+```
+
+Horrendous. So wee need to compute the gradient:
+
+```{r}
+dl_dyhat <- -2 * (y - y_hat) # derivative of L with respect to y_hat, for each point
+dyhat_dw <- x                # derivative of y_hat with respect to w, for each point
+
+gradient <- mean(dl_dyhat * dyhat_dw) 
+gradient
+```
+
+and update the weight: 
+
+```{r}
+w <- w - (lr * gradient)
+w
+```
+
+This is the core of gradient descent: we move $w$ in the opposite direction of the gradient.
+
+Let's update the model:
+
+```{r}
+y_hat <- (w * x)+3 # our new model
+
+plot(y ~ x)
+points(y_hat ~ x, col = "blue", cex = 0.5) # adding predictions for x
+abline(a=3,b=w, col = "blue") # the model's predictions line
+abline(a=3,b=2, col = "red") # keep the old line as reference
+
+loss <- MSE(y,y_hat)
+text(x = 0, y=200,paste("Loss:",round(loss,3)), pos=4)
+```
+
+Okay... loss reduced. Let's do it all again:
+
+```{r}
+y_hat <- (w * x) + 3
+
+dl_dyhat <- -2 * (y - y_hat)
+dyhat_dw <- x
+gradient <- mean(dl_dyhat * dyhat_dw)
+
+w <- w - lr * gradient
+
+y_hat <- (w * x) + 3
+loss <- MSE(y, y_hat)
+
+plot(y ~ x)
+points(y_hat ~ x, col = "blue", cex = 0.5)
+abline(a = 3, b = w, col = "blue")     # Our model
+abline(a = 3, b = 2, col = "red")      # Ideal model
+text(x = 0, y = max(y), paste("Loss:", round(loss, 3)), pos = 4)
+
+```
+
+Nice! We can see that the loss keeps going down — our model is improving! 
+
+As I said, we can do this many times, i.e., many epochs, and search for the best model. Here we will set 100 epochs, but let's go over the first 10 to see some things:
+
+```{r}
+epochs <- 1:100
+
+losses <- c() # this will be useful later
+for (epoch in epochs[1:10]) {
+  y_hat <- (w * x) + 3
+
+  dl_dyhat <- -2 * (y - y_hat)
+  dyhat_dw <- x
+  gradient <- mean(dl_dyhat * dyhat_dw)
+
+  w <- w - lr * gradient
+
+  loss <- MSE(y, y_hat)
+  losses <- c(losses, loss)
+  
+  print(paste("Epoch:",epoch,"| Loss:",loss,"| w:",w))
+}
+```
+
+Now its possible to see how the loss reduces every epoch as $w$ get closes to 2, our ideal value. However, we need to go further, so let's go for 90 more epochs.
+
+```{r}
+epochs <- 1:100
+
+for (epoch in epochs[11:100]) {
+  y_hat <- (w * x) + 3
+
+  dl_dyhat <- -2 * (y - y_hat)
+  dyhat_dw <- x
+  gradient <- mean(dl_dyhat * dyhat_dw)
+
+  w <- w - lr * gradient
+
+  loss <- MSE(y, y_hat)
+  losses <- c(losses, loss)
+}
+```
+
+We can visualize the training process with a graph of loss against each epoch:
+
+```{r}
+plot(losses ~ epochs, type="l", ylab = "Loss (MSE)", xlab = "Epoch")
+```
+
+This type of plot is called "convergence plot". It indicates that around epoch 40 the model *converged*, i.e., minimized the loss, and could not improve further. That is, we found the model we were seeking. Awesome, isn't it? This is the essence of many machine learning algorithms: define a model, measure the error, and use gradients to make it better — one small step at a time.
+
+Well, let's visualize this model:
+
+```{r}
+plot(y ~ x)
+points(y_hat ~ x, col = "blue", cex = 0.5)
+abline(a = 3, b = w, col = "blue")     # Our model
+abline(a = 3, b = 2, col = "red")      # Ideal model
+text(x = 0, y = max(y), paste("Loss:", round(loss, 3)), pos = 4)
+text(x = 0, y = max(y)-15, paste("w:", round(w, 3)), pos = 4)
+```
+
+Very nice. We ended up with a model $\hat{y}=2.028x +3$. Very close of our first guessed model $\hat{y}=2x+3$; and look, the loss is lower!! It was 88.3, now it is 85.152. It means we constructed a model more accurate.
+
+## Getting more complex
+
+Wow, we got so far, but let's go even further. Now, we will also apply the gradient to find the bias $b$. For this, we will introduce the gradient to adjust $b$, i.e., the derivative of $L$ with respect to $b$, or $\frac{dL}{db}$, which can be resolved in the same way as the gradient of $w$, with the chain rule. This time I'll skip the math, let's go straight to the code:
+
+```{r}
+set.seed(13)
+
+# Parameter initialization
+w <- runif(1)
+b <- runif(1)
+lr <- 0.00001
+
+# Para guardar o histórico da perda
+losses <- c()
+epochs <- 1:100
+
+# Training loop
+for (epoch in epochs) {
+  # Predictions
+  y_hat <- (w * x) + b
+
+  # Gradients
+  dl_dyhat <- -2 * (y - y_hat)    # ∂L/∂ŷ
+  dyhat_dw <- x                   # ∂ŷ/∂w
+  dyhat_db <- 1                   # ∂ŷ/∂b
+
+  gradient_w <- mean(dl_dyhat * dyhat_dw)
+  gradient_b <- mean(dl_dyhat * dyhat_db)
+
+  # Parameters update
+  w <- w - lr * gradient_w
+  b <- b - lr * gradient_b
+
+  # Compute the loss
+  loss <- MSE(y, y_hat)
+  losses <- c(losses, loss)
+}
+
+```
+
+Let's see the convergence:
+
+```{r}
+plot(losses ~ epochs, type="l", ylab = "Loss (MSE)", xlab = "Epoch")
+```
+
+And visualize the final model:
+
+```{r}
+plot(y ~ x)
+points(y_hat ~ x, col = "blue", cex = 0.5)
+abline(a = b, b = w, col = "blue")     # Final model
+abline(a = 3, b = 2, col = "red")      # First model
+text(x = 0, y = max(y), paste("Loss:", round(loss, 3)), pos = 4)
+text(x = 0, y = max(y)-15, paste("w:", round(w, 3)), pos = 4)
+text(x = 0, y = max(y)-30, paste("bias:", round(b, 3)), pos = 4)
+```
+
+Thus, the equation of our final model is $\hat{y_i}=wx_i+b=2.067x+0.266$. Note that the estimated $b$ was pretty distant from 3, our firstly estimated $b$. However, we managed to reduced the loss even more, now it is 84.566. So, basically, we ended up constructing a better model than the first one!! Pretty neat, huh?
+
+\# The grand finale
+
+We are pretty much done here, but I want to construct an animation of the full process just for better visualization... and because it is truly beautiful:
+
+```{r, message=FALSE, warning=FALSE, results='hide'}
+library(ggplot2)
+library(gganimate)
+
+set.seed(13)
+# Initializing parameters
+w <- runif(1)
+b <- runif(1)
+lr <- 0.00001
+
+# Store history
+history <- data.frame()
+
+# Training loop
+epochs <- 1:100
+for (epoch in epochs) {
+  y_hat <- w * x + b
+  
+  # Gradient
+  dl_dyhat <- -2 * (y - y_hat)
+  gradient_w <- mean(dl_dyhat * x)
+  gradient_b <- mean(dl_dyhat)
+  
+  # Parameter update
+  w <- w - lr * gradient_w
+  b <- b - lr * gradient_b
+  
+  # Loss
+  loss <- mean((y - y_hat)^2)
+  
+  # Register it all
+  step_df <- data.frame(
+    x = x,
+    y = y,
+    y_hat = y_hat,
+    epoch = epoch,
+    w = w,
+    b = b,
+    loss = loss
+  )
+  
+  history <- rbind(history, step_df)
+}
+
+max_y <- max(y)
+
+# Animated graph
+p <- ggplot(history, aes(x = x, y = y)) +
+  geom_point(color = "black", alpha = 0.6) +
+  geom_line(aes(y = y_hat), color = "blue", size = 1) +
+  geom_line(aes(y = (2*x)+3), color = "red", size = 1) +
+  geom_text(aes(
+    x = 10,
+    y = max_y,
+    label = paste0("w = ", round(w, 4),
+                   ", b = ", round(b, 4),
+                   ", loss = ", round(loss, 1))
+  ), hjust = 0.35, vjust = 1, size = 5, color = "black") +
+  labs(
+    title = 'Epoch: {closest_state}',
+    x = 'x', y = 'y'
+  ) +
+  theme_minimal() +
+  transition_states(epoch, transition_length = 1, state_length = 1, wrap = FALSE) +
+  ease_aes('linear')
+
+# Render
+# anim <- animate(p, fps = 10, nframes = length(epochs), width = 800, height = 400,
+#                 renderer = gifski_renderer("animated_gradient.gif"))
+
+```
+
+![](regressao_animada.gif)
+
+That's all!!
+
+Thank you.
