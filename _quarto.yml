@@ -14,7 +14,9 @@ website:
       - href: embeded_resume.qmd
         text: Resume
       - href: projects.qmd
-        text: Projects and tutorials
+        text: Projects
+      - href: portfolio.qmd
+        text: Portfolio
       - href: publications.qmd
         text: Publications
     

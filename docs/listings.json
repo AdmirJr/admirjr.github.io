@@ -6,5 +6,27 @@
       "/projects/pythagoras_grouping/index.html",
       "/projects/dice_simulations/index.html"
     ]
+  },
+  {
+    "listing": "/showcase.html",
+    "items": [
+      "/showcase/gradient_exploration/index.html",
+      "/showcase/neural_torch/index.html",
+      "/showcase/pythagoras_grouping/index.html",
+      "/showcase/dice_simulations/index.html"
+    ]
+  },
+  {
+    "listing": "/publications.html",
+    "items": []
+  },
+  {
+    "listing": "/portfolio.html",
+    "items": [
+      "/portfolio/gradient_exploration/index.html",
+      "/portfolio/neural_torch/index.html",
+      "/portfolio/pythagoras_grouping/index.html",
+      "/portfolio/dice_simulations/index.html"
+    ]
   }
 ]

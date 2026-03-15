@@ -1,0 +1,14 @@
+---
+title: "Portfolio"
+listing:
+  contents: portfolio
+  sort: "date desc"
+  type: grid
+  categories: true
+  sort-ui: false
+  filter-ui: false
+page-layout: full
+title-block-banner: true
+---
+
+A collection of posts and technical explorations in data science and ecology, showcasing my approach to problem-solving and modeling.

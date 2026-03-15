@@ -4,11 +4,16 @@ date: 12-11-2024
 author: Admir Junior 
 categories: [simulation, statistics, python]
 image: "dice.jpg"
+#jupyter: python3
 ---
 
 ```{r, include=FALSE}
 library(reticulate)
-use_virtualenv(".venv", required = TRUE)
+reticulate::use_python("../../.venv/bin/python3", required = TRUE)
+```
+
+```{python, include=FALSE}
+# asdadas
 ```
 
 

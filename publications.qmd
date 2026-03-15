@@ -1,17 +1,48 @@
 ---
 title: "Publications"
+listing:
+  id: sample-listings
+  type: default
+  categories: true
+  sort: "date desc"
+  contents:
+    - title: "Becoming e(E)arth"
+      author: "**de Oliveira Junior, A. C.**; Sousa, R.S."
+      date: "2023-12"
+      categories: [Essay, First Author, Philosophy]
+      description: "Here I argument in favor of the inclusion of poetry as a way to teach and learn science."
+      path: "https://doi.org/10.46667/renbio.v16i1.1008"
+    
+    - title: "Environmental heterogeneity as a determinant of bee diversity patterns in the Atlantic Forest"
+      author: "Antonio, A.I.; **de Oliveira Junior, A.C.**; Villalobos, F.; Velazco, S.J.E."
+      date: "2025-05"
+      categories: [Paper, Computational ecology, Co-author]
+      description: "Modeled the distribution of several bee species to identify the role of environmental heterogeneity in bee diversity. Used georeferenced occurrence data and geospatial environmental predictors."
+      path: "https://doi.org/10.21425/fob.18.142410"
+      
+    - title: "`adm`: An R package for constructing abundance‐based species distribution models"
+      author: "**de Oliveira Junior, A.C.**; Velazco, S.J.E."
+      date: "2025-06"
+      categories: [Paper, Software, Tools, First Author]
+      description: "Developed a R package that supports full workflows for construction and validation of Abundance-based Species Distribution Models."
+      path: "https://doi.org/10.1111/2041-210X.70074"
+      
+    - title: "Diversity, floral visitation pattern, and conservation of stingless bees (Apidae: Meliponini) in the Brazilian Legal Amazon"
+      author: "Soares, I.M.N.; **de Oliveira Junior, A.C.**; Antonio, A.I.; Nogueira, D.S.; Velazco, S.J.E."
+      date: "2026-01"
+      categories: [Paper, Computational ecology, Co-author]
+      description: "Estimated the distribution and diversity of bees in the Amazon, evaluated the representativeness of meliponines within protected areas, and investigate the influence of the remaining habitat on species richness."
+      path: "https://doi.org/10.1016/j.jnc.2025.127120"
 ---
 
-## [Becoming e(E)arth (2023)](https://doi.org/10.46667/renbio.v16i1.1008)
-:::::: columns
-::: {.column width="40%"}
-This is an essay written back on college. It was my final work to graduate in Biological Sciences. Here I argument in favor of the inclusion of poetry as a way to teach and learn science.
-:::
+<style>
+  .listing-title {
+    font-size: 1.15rem !important;
+    font-weight: 600;
+  }
+</style>
 
-::: {.column width="5%"}
-:::
+A collection of my academic papers, essays, and technical contributions.
 
-::: {.column width="55%"}
-![](images/publications/tornarse_terra.png){fig-align="center"}
+::: {#sample-listings}
 :::
-::::::
