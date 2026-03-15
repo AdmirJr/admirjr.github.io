@@ -1,6 +1,7 @@
 ---
-title: "Admir C. de O. Junior"
-subtitle: "M.Sc. in Biological Sciences (Ecology)"
+title: "Admir C. de O. Junior, M.Sc."
+subtitle: "<span style='display: block; text-align: center;'>Ecologist | Data Scientist</span>"
+# subtitle: "<span style='display: block; text-align: center;'>Ph.D. Researcher at Bothanical Institute of Barcelona</span>"
 image: images/profile1.png
 about:
   template: jolla
@@ -24,12 +25,10 @@ about:
       href: mailto:admircjunior@gmail.com
 ---
 
-Hello, nice to meet you!
+Hello, nice to meet you! 
 
-I'm a biologist and mathematician with skills in statistics, data science and programming.
+I’m an ecologist and data scientist working primarily in computational and theoretical ecology. My skills range from programming and statistical analysis to data visualization.
 
-Academically, I'm mostly interested in all aspects of ecological modeling—from theory to practice, and its implications.
-
-This website serves as my portfolio. Here, you will find information about me, my work, and side projects.
+This website serves as my portfolio. Here you will find information about me, my work, and some side projects.
 
 Feel free to reach out!
