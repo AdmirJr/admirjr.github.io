@@ -25,7 +25,7 @@ about:
       href: mailto:admircjunior@gmail.com
 ---
 
-Hello, nice to meet you! 
+Hello, nice to meet you!
 
 I’m an ecologist and data scientist working primarily in computational and theoretical ecology. My skills range from programming and statistical analysis to data visualization.
 
